@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
 import "../src/FrostContract.sol";
+
 contract StandardERC20Test is Test {
     StandardERC20 token;
     address owner = address(this);
@@ -254,44 +255,42 @@ contract StandardERC20Test is Test {
         vm.prank(alice);
         token.burnFrom(alice, 100 * DECIMALS);
 
-        assertEq(token.balanceOf(owner),initialSupply - 300 * DECIMALS - 200 * DECIMALS);
-        assertEq(token.balanceOf(alice),300 * DECIMALS - 50 * DECIMALS + 150 * DECIMALS - 100 * DECIMALS);
+        assertEq(token.balanceOf(owner), initialSupply - 300 * DECIMALS - 200 * DECIMALS);
+        assertEq(token.balanceOf(alice), 300 * DECIMALS - 50 * DECIMALS + 150 * DECIMALS - 100 * DECIMALS);
         assertEq(token.balanceOf(bob), 200 * DECIMALS);
         assertEq(token.balanceOf(charlie), 50 * DECIMALS);
 
-        assertEq(token.totalSupply(),initialSupply + 150 * DECIMALS - 100 * DECIMALS);
+        assertEq(token.totalSupply(), initialSupply + 150 * DECIMALS - 100 * DECIMALS);
     }
 
-
-        function testOwnerFunctionalityAfterTransfer() public {
+    function testOwnerFunctionalityAfterTransfer() public {
         // Transfer ownership to Alice
         token.transferOwnership(alice);
-        
+
         // Try to mint as original owner (should fail)
         vm.expectRevert("Ownable: caller is not the owner");
         token.mint(bob, 100 * DECIMALS);
-        
+
         // Alice should be able to mint now
         vm.prank(alice);
         token.mint(bob, 100 * DECIMALS);
         assertEq(token.balanceOf(bob), 100 * DECIMALS);
-        
+
         // Alice should be able to burn
         vm.prank(alice);
         token.burn(bob, 50 * DECIMALS);
         assertEq(token.balanceOf(bob), 50 * DECIMALS);
     }
 
-
     function testUncheckedMathOptimization() public {
         // Initial distribution
         token.transfer(alice, 100 * DECIMALS);
-        
+
         // Track gas usage for a transfer
         uint256 gasStart = gasleft();
         token.transfer(bob, 10 * DECIMALS);
         uint256 gasUsed = gasStart - gasleft();
-        
+
         // Just a sanity check that gas is reasonable
         // This is not a strict test as gas costs can vary
         assertTrue(gasUsed < 60000, "Transfer consumes too much gas");
